@@ -32,7 +32,7 @@ pub struct IdsHeader {
     pub correlation_message: Option<String>,
     /// Date of issuing the Message
     #[serde(rename = "ids:issued", alias = "issued")]
-    pub issued: InfoModelDateTime,
+    pub issued: chrono::DateTime<chrono::Utc>,
     #[serde(rename = "ids:issuerConnector", alias = "issuerConnector")]
     /// Origin Connector of the message. Value: URI of origin Connector
     pub issuer_connector: InfoModelId,
@@ -110,7 +110,7 @@ impl Default for IdsHeader {
             pid: None,
             model_version: String::new(),
             correlation_message: None,
-            issued: InfoModelDateTime::default(),
+            issued: chrono::Utc::now(),
             issuer_connector: InfoModelId::new(String::new()),
             sender_agent: InfoModelId::SimpleId("https://w3id.org/idsa/core/ClearingHouse".to_string()),
             recipient_connector: None,

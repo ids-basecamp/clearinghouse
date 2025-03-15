@@ -86,7 +86,7 @@ pub(crate) fn configure_logging(config: &CHConfig) {
         if let Some(level) = &config.log_level {
             #[allow(unsafe_code)] // Deprecated safe from rust edition 2024
             unsafe {
-                std::env::set_var("RUST_LOG", level.to_string());
+                std::env::set_var("RUST_LOG", format!("{},multipart=INFO,hyper_util=INFO,sqlx=INFO", level));
             }
         }
     }

@@ -35,6 +35,14 @@ pub fn build_multipart_body<T: serde::Serialize>(
 pub async fn parse_multipart_payload<T: serde::de::DeserializeOwned + std::fmt::Debug>(response: http::Response<axum::body::Body>) -> clearing_house_app::model::ids::message::IdsMessage<T> {
     use std::io::Read;
     
+    // Check that the response is a multipart response
+    {
+        let content_type_value = response.headers().get(reqwest::header::CONTENT_TYPE).unwrap().to_str();
+        tracing::trace!("Content-Type: {:?}", content_type_value);
+
+        assert!(content_type_value.unwrap().starts_with("multipart/form-data"));
+    }
+    
     let boundary = response.headers().get(reqwest::header::CONTENT_TYPE)
         .and_then(|ct| ct.to_str().ok())
         .and_then(|ct| ct.split("boundary=").last())
@@ -44,6 +52,8 @@ pub async fn parse_multipart_payload<T: serde::de::DeserializeOwned + std::fmt::
     let body = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await
         .unwrap();
+    
+    tracing::trace!("Body: {:?}", &body);
 
     let mut multipart: multipart::server::Multipart<&[u8]> = multipart::server::Multipart::with_body(body.as_ref(), boundary);
     let mut header: Option<clearing_house_app::model::ids::message::IdsHeader> = None;
@@ -52,6 +62,8 @@ pub async fn parse_multipart_payload<T: serde::de::DeserializeOwned + std::fmt::
     while let Some(mut field) = multipart.read_entry().unwrap() {
         let mut buf = Vec::new();
         field.data.read_to_end(&mut buf).unwrap();
+        
+        tracing::trace!("Field headers: {:?}", &field.headers);
 
         match &*field.headers.name {
             "header" => {
