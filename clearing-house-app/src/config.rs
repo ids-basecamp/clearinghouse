@@ -84,12 +84,20 @@ pub(crate) fn read_config(config_file_override: Option<&std::path::Path>) -> CHC
 pub(crate) fn configure_logging(config: &CHConfig) {
     if std::env::var("RUST_LOG").is_err() {
         if let Some(level) = &config.log_level {
-            #[allow(unsafe_code)] // Deprecated safe from rust edition 2024
-            unsafe {
-                std::env::set_var(
-                    "RUST_LOG",
-                    format!("{},multipart=INFO,hyper_util=INFO,sqlx=INFO", level),
-                );
+            // Set log level (do not set bollard, hyper_util, multipart to TRACE or DEBUG)
+            if let LogLevel::Trace | LogLevel::Debug = level {
+                #[allow(unsafe_code)] // Deprecated safe from rust edition 2024
+                unsafe {
+                    std::env::set_var(
+                        "RUST_LOG",
+                        format!("{level},multipart=INFO,hyper_util=INFO,bollard=INFO"),
+                    );
+                }
+            } else {
+                #[allow(unsafe_code)] // Deprecated safe from rust edition 2024
+                unsafe {
+                    std::env::set_var("RUST_LOG", level.to_string());
+                }
             }
         }
     }
