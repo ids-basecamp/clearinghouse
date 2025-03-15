@@ -14,9 +14,11 @@ COPY migrations ./migrations
 COPY src ./src
 
 # Build the Rust application with dependencies (this helps to cache dependencies)
+# Uses a build cache to speed up the build process
+# The final step is to copy the builded binary to out of the cache
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
-    --mount=type=cache,target=/usr/src/chapp/target \
+    --mount=type=cache,sharing=private,target=/usr/src/chapp/target \
     cargo build --release \
  && cp target/release/clearing-house-app /usr/src/chapp/clearing-house-app
 

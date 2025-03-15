@@ -251,9 +251,9 @@ impl<T: ProcessStore + Send + Sync, S: DocumentStore + Send + Sync> LoggingServi
             }
             Ok(None) => {
                 info!(
-                    "Requested pid '{}' does not exist and will have {} owners. Creating...",
-                    &pid,
-                    owners.len()
+                    "Requested pid '{pid}' by {user} does not exist and will have {} owners ({}). Creating...",
+                    owners.len(),
+                    owners.join(", ")
                 );
 
                 // create process
@@ -391,11 +391,11 @@ impl<T: ProcessStore + Send + Sync, S: DocumentStore + Send + Sync> LoggingServi
     ) -> Result<Process, LoggingServiceError> {
         match self.db.get_process(pid).await {
             Ok(Some(p)) if !p.is_authorized(user) => {
-                warn!("User is not authorized to read from pid '{}'", &pid);
+                warn!("User '{user}' is not authorized to read from pid '{}'", &pid);
                 Err(LoggingServiceError::UserNotAuthorized)
             }
             Ok(Some(p)) => {
-                info!("User authorized.");
+                info!("User '{user}' authorized for '{pid}'");
                 Ok(p)
             }
             Ok(None) => Err(LoggingServiceError::ProcessDoesNotExist(pid.clone())),
