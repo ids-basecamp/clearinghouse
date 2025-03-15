@@ -2,7 +2,7 @@ use crate::db::DocumentStore;
 use crate::model::claims::ChClaims;
 use crate::model::constants::{DEFAULT_NUM_RESPONSE_ENTRIES, MAX_NUM_RESPONSE_ENTRIES};
 use crate::model::document::Document;
-use crate::model::{parse_date, validate_and_sanitize_dates, SortingOrder};
+use crate::model::{SortingOrder, parse_date, validate_and_sanitize_dates};
 use crate::services::{DocumentReceipt, QueryResult};
 use std::convert::TryFrom;
 

@@ -1,9 +1,9 @@
 pub(crate) mod postgres_document_store;
 pub(crate) mod postgres_process_store;
 
+use crate::model::SortingOrder;
 use crate::model::document::Document;
 use crate::model::process::Process;
-use crate::model::SortingOrder;
 
 pub(crate) trait ProcessStore {
     #[allow(dead_code)]

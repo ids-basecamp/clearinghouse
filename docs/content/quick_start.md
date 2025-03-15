@@ -36,11 +36,11 @@ cargo run
 Alternatively, you can use **Docker Compose** to run the application in a containerized environment. Ensure that you have **Docker** and **Docker Compose** installed.
 
 #### Running with Docker Compose
-1. Create an `example.docker-compose.yml` file (if not provided).
+1. Create an `docker-compose.yml` file (example [file](../../docker/docker-compose.yml)).
 2. Start the application with:
 
 ```bash
-docker-compose -f example.docker-compose.yml up -d
+docker-compose up -d
 ```
 
 This will spin up the required services in detached mode.

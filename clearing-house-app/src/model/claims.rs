@@ -1,12 +1,12 @@
-use crate::model::constants::{ENV_SHARED_SECRET};
-use crate::model::ids;
 use crate::AppState;
+use crate::model::constants::ENV_SHARED_SECRET;
+use crate::model::ids;
+use axum::extract::FromRequestParts;
 use axum::response::IntoResponse;
 use ids_daps_client::DapsError;
 use std::collections::HashMap;
 use std::env;
 use std::sync::Arc;
-use axum::extract::FromRequestParts;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ChClaims {
@@ -51,13 +51,15 @@ where
 
         // Assemble request again and do the Multipart extraction
         let req = axum::extract::Request::from_parts(parts, body);
-        let multipart = axum::extract::Multipart::from_request(req, state).await.map_err(|_| {
-            (
-                axum::http::StatusCode::BAD_REQUEST,
-                "Expecting multipart request",
-            )
-                .into_response()
-        })?;
+        let multipart = axum::extract::Multipart::from_request(req, state)
+            .await
+            .map_err(|_| {
+                (
+                    axum::http::StatusCode::BAD_REQUEST,
+                    "Expecting multipart request",
+                )
+                    .into_response()
+            })?;
 
         // Extracting the relevant multipart fields
         let multipart_fields = match extract_multipart_fields(multipart).await {
@@ -75,9 +77,17 @@ where
             .map(|b| serde_json::from_slice(&b))
             .transpose()
             .map_err(|e| {
-                let raw_body = String::from_utf8_lossy(multipart_fields.get("header").expect("The 'header' field should exist"));
-                
-                tracing::error!("...retrieve and parse header: {} | raw body: {:?}", e, raw_body);
+                let raw_body = String::from_utf8_lossy(
+                    multipart_fields
+                        .get("header")
+                        .expect("The 'header' field should exist"),
+                );
+
+                tracing::error!(
+                    "...retrieve and parse header: {} | raw body: {:?}",
+                    e,
+                    raw_body
+                );
                 (
                     axum::http::StatusCode::BAD_REQUEST,
                     "Invalid 'header' multipart",
@@ -92,23 +102,22 @@ where
                     .into_response()
             })?;
         tracing::trace!("Header: {:#?}", header);
-        
+
         // Parsing the payload if exists
-        let payload = multipart_fields
-            .get("payload")
-            .cloned();
+        let payload = multipart_fields.get("payload").cloned();
 
         let payload: Option<T> = if let Some(payload) = payload {
             tracing::trace!("Payload: {:?}", payload);
-            let parsed_payload: Option<T> = serde_json::from_slice(&payload)
-                .map_err(|e| {
-                    let raw_body = String::from_utf8_lossy(payload.as_ref());
-                    
+            let parsed_payload: Option<T> = serde_json::from_slice(&payload).map_err(|e| {
+                let raw_body = String::from_utf8_lossy(payload.as_ref());
+
                 tracing::error!("...retrieve and parse payload: {} as json '{raw_body}'", e);
                 (axum::http::StatusCode::BAD_REQUEST, "Invalid payload").into_response()
             })?;
             parsed_payload
-        } else { None };
+        } else {
+            None
+        };
 
         // Validate the DAPS Token
         tracing::debug!("Validating the DAPS Token ...");
@@ -125,7 +134,7 @@ where
             .daps_client
             .validate_dat(&token.token_value)
             .await
-            .map(|t|t.claims)
+            .map(|t| t.claims)
             .map_err(|e| match e {
                 DapsError::InvalidToken => {
                     tracing::error!("Invalid DAPS Token");
@@ -196,7 +205,8 @@ async fn extract_multipart_fields(
 pub fn get_jwks(cert_util: &Arc<ids_daps_cert::CertUtil>) -> Option<jsonwebtoken::jwk::JwkSet> {
     use base64::Engine;
 
-    let params = cert_util.rsa_exponent_and_modulus()
+    let params = cert_util
+        .rsa_exponent_and_modulus()
         .expect("Cannot extract RSA parameters from certificate");
 
     let engine = base64::engine::general_purpose::URL_SAFE_NO_PAD;

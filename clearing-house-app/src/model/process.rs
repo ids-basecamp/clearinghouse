@@ -45,7 +45,7 @@ pub struct DataTransaction {
 
 impl DataTransaction {
     /// Signs a `DataTransaction` with a given key on the `key_path` and returns a `Receipt`.
-    /// 
+    ///
     /// # Errors
     /// Only if issues with reading the key or signing the `DataTransaction` occur.
     pub fn sign_jsonwebtoken(

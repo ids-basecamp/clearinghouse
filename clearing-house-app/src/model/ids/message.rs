@@ -68,10 +68,7 @@ pub struct IdsHeader {
     )]
     pub content_version: Option<String>,
     /// Token representing a claim, that the sender supports a certain security profile. Value: Instance of ids:DynamicAttributeToken.
-    #[serde(
-    rename = "ids:securityToken",
-    alias = "securityToken",
-    )]
+    #[serde(rename = "ids:securityToken", alias = "securityToken")]
     pub security_token: Option<SecurityToken>,
     /// An authorization token. The token can be issued from the Connector of the Data Provider (A) to the Connector of the
     /// Data Consumer (B). Can be used to avoid full authentication via DAPS, if Connector B wants to access the data of
@@ -83,8 +80,6 @@ pub struct IdsHeader {
     )]
     pub authorization_token: Option<String>,
 }
-
-
 
 /// Metadata describing payload exchanged by interacting Connectors.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -112,7 +107,9 @@ impl Default for IdsHeader {
             correlation_message: None,
             issued: InfoModelDateTime::default(),
             issuer_connector: InfoModelId::new(String::new()),
-            sender_agent: InfoModelId::SimpleId("https://w3id.org/idsa/core/ClearingHouse".to_string()),
+            sender_agent: InfoModelId::SimpleId(
+                "https://w3id.org/idsa/core/ClearingHouse".to_string(),
+            ),
             recipient_connector: None,
             recipient_agent: None,
             transfer_contract: None,
