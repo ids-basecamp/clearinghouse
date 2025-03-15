@@ -1,3 +1,5 @@
+#syntax=docker/dockerfile:1
+
 # Use an official Rust runtime as a parent image
 FROM rust:latest AS build-env
 
@@ -12,7 +14,11 @@ COPY migrations ./migrations
 COPY src ./src
 
 # Build the Rust application with dependencies (this helps to cache dependencies)
-RUN cargo build --release
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/usr/local/cargo/git \
+    --mount=type=cache,target=/usr/src/chapp/target \
+    cargo build --release \
+ && cp target/release/clearing-house-app /usr/src/chapp/clearing-house-app
 
 FROM gcr.io/distroless/cc-debian12
 
@@ -23,5 +29,5 @@ WORKDIR /app
 COPY init_db /app/init_db
 COPY config.toml /app/
 
-COPY --from=build-env /usr/src/chapp/target/release/clearing-house-app /app/
+COPY --from=build-env /usr/src/chapp/clearing-house-app /app/
 CMD ["/app/clearing-house-app"]
