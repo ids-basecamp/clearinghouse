@@ -2,10 +2,10 @@ use crate::db::{DocumentStore, ProcessStore};
 use crate::model::{
     claims::ChClaims,
     constants::{DEFAULT_NUM_RESPONSE_ENTRIES, DEFAULT_PROCESS_ID, MAX_NUM_RESPONSE_ENTRIES},
-    {document::Document, process::Process, SortingOrder},
+    {SortingOrder, document::Document, process::Process},
 };
 use crate::model::{
-    ids::{message::IdsMessage, IdsQueryResult},
+    ids::{IdsQueryResult, message::IdsMessage},
     process::{DataTransaction, OwnerList, Receipt},
 };
 use crate::services::document_service::DocumentService;
@@ -87,8 +87,9 @@ pub(crate) struct LoggingService<T, S> {
 }
 
 impl<T: ProcessStore + Send + Sync, S: DocumentStore + Send + Sync> LoggingService<T, S>
-    where
-        Self: Send + Sync {
+where
+    Self: Send + Sync,
+{
     pub fn new(
         db: T,
         doc_api: Arc<DocumentService<S>>,
@@ -142,7 +143,10 @@ impl<T: ProcessStore + Send + Sync, S: DocumentStore + Send + Sync> LoggingServi
                 let new_process = Process::new(pid.clone(), vec![user.clone()]);
 
                 if let Err(e) = self.db.store_process(new_process).await {
-                    error!("Error while creating process '{}' automatically for log message (could have been created in the meantime)", &pid);
+                    error!(
+                        "Error while creating process '{}' automatically for log message (could have been created in the meantime)",
+                        &pid
+                    );
 
                     match self.get_process_and_check_authorized(&pid, user).await {
                         Ok(_) => {}
@@ -228,7 +232,7 @@ impl<T: ProcessStore + Send + Sync, S: DocumentStore + Send + Sync> LoggingServi
         if let Some(static_process_owner) = &self.static_process_owner {
             owners.push(static_process_owner.clone());
         }
-        
+
         // Extract owners from payload and extend the owners list with not yet existing ones
         if let Some(owner_list) = m.payload {
             trace!("OwnerList: '{:#?}'", owner_list);
@@ -391,7 +395,10 @@ impl<T: ProcessStore + Send + Sync, S: DocumentStore + Send + Sync> LoggingServi
     ) -> Result<Process, LoggingServiceError> {
         match self.db.get_process(pid).await {
             Ok(Some(p)) if !p.is_authorized(user) => {
-                warn!("User '{user}' is not authorized to read from pid '{}'", &pid);
+                warn!(
+                    "User '{user}' is not authorized to read from pid '{}'",
+                    &pid
+                );
                 Err(LoggingServiceError::UserNotAuthorized)
             }
             Ok(Some(p)) => {

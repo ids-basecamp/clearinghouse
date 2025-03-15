@@ -1,6 +1,6 @@
+use crate::model::SortingOrder;
 use crate::model::document::Document;
 use crate::model::ids::{InfoModelDateTime, InfoModelId};
-use crate::model::SortingOrder;
 
 pub(crate) struct PostgresDocumentStore {
     db: sqlx::PgPool,
@@ -165,7 +165,11 @@ impl From<Document<String>> for DocumentRow {
             issued: sqlx::types::Json(value.content.header.issued),
             issuer_connector: sqlx::types::Json(value.content.header.issuer_connector),
             content_version: value.content.header.content_version,
-            recipient_connector: value.content.header.recipient_connector.map(sqlx::types::Json),
+            recipient_connector: value
+                .content
+                .header
+                .recipient_connector
+                .map(sqlx::types::Json),
             sender_agent: value.content.header.sender_agent.to_string(),
             recipient_agent: value.content.header.recipient_agent.map(sqlx::types::Json),
             payload: value.content.payload.map(|s| s.as_bytes().to_owned()),
@@ -197,9 +201,10 @@ impl From<DocumentRow> for Document<String> {
                     id: value.message_id,
                     ..Default::default()
                 },
-                payload: value.payload.map(|b| String::from_utf8_lossy(&b).to_string()),
+                payload: value
+                    .payload
+                    .map(|b| String::from_utf8_lossy(&b).to_string()),
                 payload_type: value.payload_type,
-
             },
         }
     }

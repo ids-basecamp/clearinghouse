@@ -90,7 +90,11 @@ impl AppState {
 
         let daps_client = Arc::new(daps_client);
 
-        Ok(Self { logging_service, daps_client, cert_util })
+        Ok(Self {
+            logging_service,
+            daps_client,
+            cert_util,
+        })
     }
 }
 
