@@ -1,3 +1,45 @@
+# [2.0.0-beta.2](https://github.com/ids-basecamp/clearinghouse/compare/v2.0.0-beta.1...v2.0.0-beta.2) (2025-03-15)
+
+
+### Bug Fixes
+
+* **app:** Bump dependencies ([3c34b8a](https://github.com/ids-basecamp/clearinghouse/commit/3c34b8adf906cfae0da1e167bed024d0be509d39))
+* **app:** Multiple small changes ([39d0d7d](https://github.com/ids-basecamp/clearinghouse/commit/39d0d7da4f9897cc1e176216aa67cca12f86c698))
+* **app:** Possible race condition when log and create_process are executed at the same time; Formatting ([024812d](https://github.com/ids-basecamp/clearinghouse/commit/024812df05587c4cb220a7b322f8cd08069edcc7))
+* clearing house edc docker build ([ae6a9c4](https://github.com/ids-basecamp/clearinghouse/commit/ae6a9c46e5e1e4fd60a37ddf35cd5ff4a8ca6e25))
+* **edc:** docker build ([936754b](https://github.com/ids-basecamp/clearinghouse/commit/936754bb00a6f811815abe1d07f808edecea502c))
+* fixing test workflow ([7fe976f](https://github.com/ids-basecamp/clearinghouse/commit/7fe976ffd0312b295a18fbbcdf59904390694185))
+* fixing test workflow ([c04c22f](https://github.com/ids-basecamp/clearinghouse/commit/c04c22ff9abc5aa8a943cfb4dd3a90e505fe393e))
+* fixing test workflow ([c195e2c](https://github.com/ids-basecamp/clearinghouse/commit/c195e2cdfaeb3288a5d263b3417de975152803fd))
+* fixing unit tests ([5cc791e](https://github.com/ids-basecamp/clearinghouse/commit/5cc791ea9a17a688e26552db81cdf0172d7eb7a3))
+* upgrading edc fork version ([0219b6a](https://github.com/ids-basecamp/clearinghouse/commit/0219b6a604f88c1cab94b72d36da668e5be46158))
+
+
+* Merge pull request #126 from ids-basecamp/feature/lh-2.0 ([7efec2c](https://github.com/ids-basecamp/clearinghouse/commit/7efec2c725b1d8ff148d98966b9a5c8fb2e68ebb)), closes [#126](https://github.com/ids-basecamp/clearinghouse/issues/126)
+
+
+### Features
+
+* **app:** add 'static_process_owner' for processes ([#117](https://github.com/ids-basecamp/clearinghouse/issues/117)) ([33cd21a](https://github.com/ids-basecamp/clearinghouse/commit/33cd21a3f3fdb5d7ac14d612ca1f18b0af0d9831))
+* **app:** removed MongoDB implementation, added report posting in PR, bumped dependencies ([c7a6aeb](https://github.com/ids-basecamp/clearinghouse/commit/c7a6aeb39987b7e621d0878c5c3b5b955c5e17e2))
+* clearing house app response errors mapping ([32dc0d4](https://github.com/ids-basecamp/clearinghouse/commit/32dc0d44d181e816d274129bd3844077734e0698))
+* clearing house app response errors mapping ([c9fa461](https://github.com/ids-basecamp/clearinghouse/commit/c9fa4610a5d9d71476445aa4db2ff9387716a138))
+* Delete infomodel and edc classes to use classes from forked projects ([8571093](https://github.com/ids-basecamp/clearinghouse/commit/857109395a21ad6b3152421abe66e8747d521537))
+* **docs:** setup deployment docs ([#124](https://github.com/ids-basecamp/clearinghouse/issues/124)) ([6a67af1](https://github.com/ids-basecamp/clearinghouse/commit/6a67af137243f6ed1cb75add12f1f75ab234c46d))
+* Included pagging tests for the query endpoint ([177cbee](https://github.com/ids-basecamp/clearinghouse/commit/177cbeed72f37f706e808b0fe1b722427311c285))
+* removing duplicated infomodel and edc classes ([0c3b7d6](https://github.com/ids-basecamp/clearinghouse/commit/0c3b7d6780ebd800b7f312cb21a0dc580e9279f7))
+* removing duplicated infomodel and edc classes ([946550e](https://github.com/ids-basecamp/clearinghouse/commit/946550e8849e220c3e4f3241884825c3ff3b0568))
+* Update project to use edc-fork classes ([53364d4](https://github.com/ids-basecamp/clearinghouse/commit/53364d4f484b177dac3914c471c8b8c08c4e9ff1))
+* updates to run tests ([0e25281](https://github.com/ids-basecamp/clearinghouse/commit/0e252812c2764bd4b063d1936fba2396118c8f74))
+* updates to run tests ([9fd4abd](https://github.com/ids-basecamp/clearinghouse/commit/9fd4abd13c45fe4429149082618e1e708f27955e))
+* updating edc version ([c246d4e](https://github.com/ids-basecamp/clearinghouse/commit/c246d4eb6d6d4baae31490c5655c91c1b92bd7fa))
+* updating to use forked edc and gradle-plugins ([75bc25c](https://github.com/ids-basecamp/clearinghouse/commit/75bc25c826ef91fb7a147093e328d03d6d963556))
+
+
+### BREAKING CHANGES
+
+* implement ids protocol directly in app and remove EDC
+
 # [2.0.0-beta.1](https://github.com/ids-basecamp/clearinghouse/compare/v1.0.0...v2.0.0-beta.1) (2025-02-13)
 
 
