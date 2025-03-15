@@ -1,6 +1,6 @@
 log_level = "INFO" # TRACE, DEBUG, INFO, WARN, ERROR
 database_url= "postgres://my_user:my_password@localhost:5432/ch"
-clear_db = true
+clear_db = false
 issuer = "http://localhost:8080"
 p12_path = "keys/connector-certificate.p12"
 p12_password = "Password1"  # Optional

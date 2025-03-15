@@ -81,7 +81,7 @@ pub enum InfoModelDateTime {
 
 impl Default for InfoModelDateTime {
     fn default() -> InfoModelDateTime {
-        InfoModelDateTime::Time(chrono::Local::now())
+        InfoModelDateTime::ComplexTime(InfoModelTimeStamp::default())
     }
 }
 

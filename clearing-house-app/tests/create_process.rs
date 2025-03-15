@@ -13,12 +13,18 @@ async fn log_message() {
         std::path::Path::new("keys/connector-certificate.p12"),
         "Password1",
     )
-        .expect("The cert_util should be already ready");
+    .expect("The cert_util should be already ready");
 
     // Starting the test DAPS and creating the DAPS client for executing requests against the Clearing House Server
-    let (_daps_container, certs_url, token_url)= common::start_daps().await;
-    let daps_client = ids_daps_client::ReqwestDapsClient::from_cert_util(&cert_util, "idsc:IDS_CONNECTORS_ALL", &certs_url, &token_url, 300);
-    
+    let (_daps_container, certs_url, token_url) = common::start_daps().await;
+    let daps_client = ids_daps_client::ReqwestDapsClient::from_cert_util(
+        &cert_util,
+        "idsc:IDS_CONNECTORS_ALL",
+        &certs_url,
+        &token_url,
+        300,
+    );
+
     let client_id = cert_util.ski_aki().unwrap().to_string();
 
     // Start Postgres
@@ -79,7 +85,11 @@ async fn log_message() {
             type_message: MessageType::RequestMessage,
             id: Some(id.clone()),
             model_version: "test".to_string(),
-            security_token: Some(common::create_security_token(&daps_client).await.expect("DAPS Token inserted")),
+            security_token: Some(
+                common::create_security_token(&daps_client)
+                    .await
+                    .expect("DAPS Token inserted"),
+            ),
             issuer_connector: InfoModelId::new("test-connector".to_string()),
             sender_agent: InfoModelId::new("https://w3id.org/idsa/core/ClearingHouse".to_string()),
             ..Default::default()
@@ -89,14 +99,15 @@ async fn log_message() {
     };
 
     let client = reqwest::Client::new();
-    let req = common::build_multipart_body(&client, http::Method::POST, format!("http://0.0.0.0:8080/process/{}", pid), msg);
+    let req = common::build_multipart_body(
+        &client,
+        http::Method::POST,
+        format!("http://0.0.0.0:8080/process/{}", pid),
+        msg,
+    );
 
     // Send create process message
-    let response = app
-        .clone()
-        .oneshot(req)
-        .await
-        .unwrap();
+    let response = app.clone().oneshot(req).await.unwrap();
 
     // Check status code
     assert_eq!(response.status(), StatusCode::CREATED);
@@ -120,7 +131,11 @@ async fn log_message() {
             type_message: MessageType::LogMessage,
             id: Some(id.clone()),
             model_version: "test".to_string(),
-            security_token: Some(common::create_security_token(&daps_client).await.expect("DAPS Token inserted")),
+            security_token: Some(
+                common::create_security_token(&daps_client)
+                    .await
+                    .expect("DAPS Token inserted"),
+            ),
             issuer_connector: InfoModelId::new("test-connector".to_string()),
             sender_agent: InfoModelId::new("https://w3id.org/idsa/core/ClearingHouse".to_string()),
             ..Default::default()
@@ -128,14 +143,15 @@ async fn log_message() {
         payload: Some(log_msg_payload.clone()),
         payload_type: None,
     };
-    let log_req = common::build_multipart_body(&client, http::Method::POST, format!("http://0.0.0.0:8080/messages/log/{}", pid), log_msg.clone());
+    let log_req = common::build_multipart_body(
+        &client,
+        http::Method::POST,
+        format!("http://0.0.0.0:8080/messages/log/{}", pid),
+        log_msg.clone(),
+    );
 
     // Send log message
-    let log_response = app
-        .clone()
-        .oneshot(log_req)
-        .await
-        .unwrap();
+    let log_response = app.clone().oneshot(log_req).await.unwrap();
 
     // Check status code
     assert_eq!(log_response.status(), StatusCode::CREATED);
@@ -163,7 +179,10 @@ async fn log_message() {
     let decoded_receipt_payload = decoded_receipt.claims;
     tracing::debug!("Decoded Receipt Payload: {:?}", decoded_receipt_payload);
     assert_eq!(decoded_receipt_payload.process_id, pid);
-    assert_eq!(decoded_receipt_payload.payload, serde_json::to_string(&log_msg_payload).unwrap());
+    assert_eq!(
+        decoded_receipt_payload.payload,
+        serde_json::to_string(&log_msg_payload).unwrap()
+    );
 
     // ---------------------------------------------------------------------------------------------
 
@@ -180,7 +199,11 @@ async fn log_message() {
             type_message: MessageType::QueryMessage,
             id: Some(id.clone()),
             model_version: "test".to_string(),
-            security_token: Some(common::create_security_token(&daps_client).await.expect("DAPS Token inserted")),
+            security_token: Some(
+                common::create_security_token(&daps_client)
+                    .await
+                    .expect("DAPS Token inserted"),
+            ),
             issuer_connector: InfoModelId::new("test-connector".to_string()),
             sender_agent: InfoModelId::new("https://w3id.org/idsa/core/ClearingHouse".to_string()),
             ..Default::default()
@@ -188,16 +211,18 @@ async fn log_message() {
         payload: None,
         payload_type: None,
     };
-    let query_req = common::build_multipart_body(&client, http::Method::POST, format!("http://0.0.0.0:8080/messages/query/{}", pid), query_msg.clone());
+    let query_req = common::build_multipart_body(
+        &client,
+        http::Method::POST,
+        format!("http://0.0.0.0:8080/messages/query/{}", pid),
+        query_msg.clone(),
+    );
 
-    let query_response = app
-        .clone()
-        .oneshot(query_req)
-        .await
-        .unwrap();
+    let query_response = app.clone().oneshot(query_req).await.unwrap();
     assert_eq!(query_response.status(), StatusCode::OK);
 
-    let query_resp: IdsMessage<IdsQueryResult<String>> = common::parse_multipart_payload(query_response).await;
+    let query_resp: IdsMessage<IdsQueryResult<String>> =
+        common::parse_multipart_payload(query_response).await;
 
     let ids_message = query_resp.payload.expect("IDS Query Result is there");
     tracing::info!("IDS Query Result: {:?}", ids_message);
@@ -209,7 +234,10 @@ async fn log_message() {
         .first()
         .expect("Document is there, just checked")
         .to_owned();
-    assert_eq!(doc.payload.expect("Payload is there"), serde_json::to_string(&log_msg_payload).unwrap());
+    assert_eq!(
+        doc.payload.expect("Payload is there"),
+        serde_json::to_string(&log_msg_payload).unwrap()
+    );
     assert_eq!(doc.header.model_version, "test".to_string());
 
     // ---------------------------------------------------------------------------------------------
@@ -231,8 +259,16 @@ async fn log_message() {
             security_token: Some(SecurityToken {
                 type_message: MessageType::DAPSToken,
                 token_value: "test".to_string(),
-                token_format: Some(clearing_house_app::model::ids::InfoModelComplexId::new("https://w3id.org/idsa/code/JWT".to_string()).into()),
-                id: Some(format!("https://w3id.org/idsa/autogen/dynamicAttributeToken/{}", clearing_house_app::util::new_uuid())),
+                token_format: Some(
+                    clearing_house_app::model::ids::InfoModelComplexId::new(
+                        "https://w3id.org/idsa/code/JWT".to_string(),
+                    )
+                    .into(),
+                ),
+                id: Some(format!(
+                    "https://w3id.org/idsa/autogen/dynamicAttributeToken/{}",
+                    clearing_house_app::util::new_uuid()
+                )),
             }),
             issuer_connector: InfoModelId::new("test-connector".to_string()),
             sender_agent: InfoModelId::new("https://w3id.org/idsa/core/ClearingHouse".to_string()),
@@ -241,14 +277,15 @@ async fn log_message() {
         payload: Some(log_msg_payload),
         payload_type: None,
     };
-    let log_req_unauth = common::build_multipart_body(&client, http::Method::POST, format!("http://0.0.0.0:8080/messages/log/{}", pid), log_msg_unauth.clone());
+    let log_req_unauth = common::build_multipart_body(
+        &client,
+        http::Method::POST,
+        format!("http://0.0.0.0:8080/messages/log/{}", pid),
+        log_msg_unauth.clone(),
+    );
 
     // Send log message
-    let log_response_unauth = app
-        .clone()
-        .oneshot(log_req_unauth)
-        .await
-        .unwrap();
+    let log_response_unauth = app.clone().oneshot(log_req_unauth).await.unwrap();
 
     assert_eq!(log_response_unauth.status(), StatusCode::BAD_REQUEST);
 

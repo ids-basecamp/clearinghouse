@@ -7,10 +7,13 @@ use tokio::net::TcpListener;
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
     #[cfg(feature = "sentry")]
-    let _guard = sentry::init(("https://347cc3aa30aa0c07d437da8c780838d3@o4506146399322112.ingest.sentry.io/4506155710480384", sentry::ClientOptions {
-        release: sentry::release_name!(),
-        ..Default::default()
-    }));
+    let _guard = sentry::init((
+        "https://347cc3aa30aa0c07d437da8c780838d3@o4506146399322112.ingest.sentry.io/4506155710480384",
+        sentry::ClientOptions {
+            release: sentry::release_name!(),
+            ..Default::default()
+        },
+    ));
 
     // Setup router
     let app = clearing_house_app::app().await?;
