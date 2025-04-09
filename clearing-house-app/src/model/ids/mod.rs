@@ -265,6 +265,8 @@ where
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct RejectionMessage {
+    #[serde(skip)]
+    code: axum::http::StatusCode,
     #[serde(flatten)]
     inner: IdsHeader,
     #[serde(rename = "ids:rejectionReason")]
@@ -275,6 +277,7 @@ impl RejectionMessage {
     #[must_use]
     pub fn new(
         clearinghouse_uri: &str,
+        code: axum::http::StatusCode,
         rejection_message: String,
         correlation_msg_id: Option<String>,
     ) -> Self {
@@ -288,6 +291,7 @@ impl RejectionMessage {
         };
 
         Self {
+            code,
             inner: header,
             rejection_reason: rejection_message,
         }
@@ -308,7 +312,7 @@ impl axum::response::IntoResponse for RejectionMessage {
             .expect("application/json is a valid mime type"),
         ]);
 
-        form.into_response()
+        (self.code, form).into_response()
     }
 }
 
