@@ -1,3 +1,10 @@
+# [2.0.0-beta.3](https://github.com/ids-basecamp/clearinghouse/compare/v2.0.0-beta.2...v2.0.0-beta.3) (2025-04-11)
+
+
+### Bug Fixes
+
+* **app:** Fix status codes of IDS responses ([005520f](https://github.com/ids-basecamp/clearinghouse/commit/005520f66b87827c8ada80672386ad4a618746c3))
+
 # [2.0.0-beta.2](https://github.com/ids-basecamp/clearinghouse/compare/v2.0.0-beta.1...v2.0.0-beta.2) (2025-03-15)
 
 ### Bug Fixes
