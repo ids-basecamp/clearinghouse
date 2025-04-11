@@ -5,6 +5,7 @@ use crate::model::process::OwnerList;
 use crate::{AppState, model::SortingOrder, model::claims::get_jwks};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use ids_daps_client::DapsError;
 
 async fn log(
     axum::extract::State(state): axum::extract::State<AppState>,
@@ -15,13 +16,10 @@ async fn log(
     }: ExtractIdsMessage<serde_json::Value>,
 ) -> super::ApiResult {
     let correlation_id = ids_message.header.id.clone();
-    let daps_token = state.daps_client.request_dat().await.map_err(|e| {
-        RejectionMessage::new(
-            state.logging_service.issuer(),
-            format!("DAPS error: {e:?}"),
-            correlation_id.clone(),
-        )
-    })?;
+    let daps_token =
+        state.daps_client.request_dat().await.map_err(|e| {
+            map_daps_error(e, state.logging_service.issuer(), correlation_id.clone())
+        })?;
 
     let cloned_ids_message: IdsMessage<String> = IdsMessage {
         header: ids_message.header.clone(),
@@ -48,6 +46,7 @@ async fn log(
             error!("Error while logging: {:?}", e);
             Err(RejectionMessage::new(
                 state.logging_service.issuer(),
+                axum::http::StatusCode::BAD_REQUEST,
                 format!("Error while logging: {e:?}"),
                 correlation_id,
             ))
@@ -69,13 +68,10 @@ async fn create_process(
     }: ExtractIdsMessage<OwnerList>,
 ) -> super::ApiResult {
     let correlation_id = ids_message.header.id.clone();
-    let daps_token = state.daps_client.request_dat().await.map_err(|e| {
-        RejectionMessage::new(
-            state.logging_service.issuer(),
-            format!("DAPS error: {e:?}"),
-            correlation_id.clone(),
-        )
-    })?;
+    let daps_token =
+        state.daps_client.request_dat().await.map_err(|e| {
+            map_daps_error(e, state.logging_service.issuer(), correlation_id.clone())
+        })?;
 
     match state
         .logging_service
@@ -96,6 +92,7 @@ async fn create_process(
             error!("Error while creating process: {e:?}");
             Err(RejectionMessage::new(
                 state.logging_service.issuer(),
+                axum::http::StatusCode::BAD_REQUEST,
                 format!("Error while creating process: {e:?}"),
                 correlation_id,
             ))
@@ -122,13 +119,10 @@ async fn query_pid(
     }: ExtractIdsMessage<()>,
 ) -> super::ApiResult {
     let correlation_id = ids_message.header.id.clone();
-    let daps_token = state.daps_client.request_dat().await.map_err(|e| {
-        RejectionMessage::new(
-            state.logging_service.issuer(),
-            format!("DAPS error: {e:?}"),
-            correlation_id.clone(),
-        )
-    })?;
+    let daps_token =
+        state.daps_client.request_dat().await.map_err(|e| {
+            map_daps_error(e, state.logging_service.issuer(), correlation_id.clone())
+        })?;
 
     match state
         .logging_service
@@ -156,6 +150,7 @@ async fn query_pid(
             error!("Error while querying: {e:?}");
             Err(RejectionMessage::new(
                 state.logging_service.issuer(),
+                axum::http::StatusCode::BAD_REQUEST,
                 format!("Error while querying: {e:?}"),
                 correlation_id,
             ))
@@ -173,13 +168,10 @@ async fn query_id(
     }: ExtractIdsMessage<()>,
 ) -> super::ApiResult {
     let correlation_id = ids_message.header.id.clone();
-    let daps_token = state.daps_client.request_dat().await.map_err(|e| {
-        RejectionMessage::new(
-            state.logging_service.issuer(),
-            format!("DAPS error: {e:?}"),
-            correlation_id.clone(),
-        )
-    })?;
+    let daps_token =
+        state.daps_client.request_dat().await.map_err(|e| {
+            map_daps_error(e, state.logging_service.issuer(), correlation_id.clone())
+        })?;
 
     match state
         .logging_service
@@ -200,6 +192,7 @@ async fn query_id(
             error!("Error while querying: {:?}", e);
             Err(RejectionMessage::new(
                 state.logging_service.issuer(),
+                axum::http::StatusCode::BAD_REQUEST,
                 format!("Error while querying: {e:?}"),
                 correlation_id,
             ))
@@ -214,6 +207,7 @@ async fn get_public_sign_key(
         Some(jwks) => Ok((StatusCode::OK, axum::Json(jwks)).into_response()),
         None => Err(RejectionMessage::new(
             state.logging_service.issuer(),
+            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
             "Error reading signing key".to_string(),
             None,
         )),
@@ -230,4 +224,29 @@ pub(crate) fn router() -> axum::routing::Router<AppState> {
             "/.well-known/jwks.json",
             axum::routing::get(get_public_sign_key),
         )
+}
+
+fn map_daps_error(e: DapsError, issuer: &str, correlation_id: Option<String>) -> RejectionMessage {
+    let (code, msg) = match e {
+        DapsError::DapsHttpClient(c) => {
+            tracing::warn!("DAPS HTTP Client issue: {c:?}");
+            (
+                axum::http::StatusCode::BAD_REQUEST,
+                "DAPS Client HTTP issue".to_string(),
+            )
+        }
+        DapsError::InvalidToken => (
+            axum::http::StatusCode::UNAUTHORIZED,
+            "Invalid Token".to_string(),
+        ),
+        DapsError::CacheError(c) => {
+            tracing::warn!("DAPS Client certificate cache issue: {c:?}");
+            (
+                axum::http::StatusCode::EXPECTATION_FAILED,
+                "DAPS Client certificate cache issue".to_string(),
+            )
+        }
+    };
+
+    RejectionMessage::new(issuer, code, msg, correlation_id)
 }
