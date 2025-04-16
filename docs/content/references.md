@@ -1,3 +1,3 @@
 # API Docs
 
-Swagger and Postman Collection can be found [here](https://github.com/truzzt/ids-basecamp-clearinghouse-postman)
+Documentation about the multipart endpoints can be found [here](https://github.com/International-Data-Spaces-Association/IDS-G/tree/main/Communication)
